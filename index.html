@@ -10,6 +10,8 @@
   ga('create', 'UA-142576921-1', 'auto');
   ga('set', 'anonymizeIp', false)
   ga('send', 'pageview');
+  var timeSincePageLoad = Math.round(performance.now());
+  ga('send', 'timing', 'JS Dependencies', 'load', timeSincePageLoad);
   function hobloc(event) {
     ga('send', 'event', {
       eventCategory: 'Outbound Link',
@@ -21,6 +23,16 @@
 </script>
 </head>
 <body>
+<script>
+  function hobloc(event) {
+    ga('send', 'event', {
+      eventCategory: 'Outbound Link',
+      eventAction: 'click',
+      eventLabel: event.target.href,
+      transport: 'beacon'
+    });
+  }
+</script>
 <link href="./My Research_files/3597120983-css_bundle_v2.css" rel="stylesheet" type="text/css">
 <meta content="width=1100" name="viewport">
 

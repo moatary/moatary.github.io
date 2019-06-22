@@ -10,7 +10,14 @@
   ga('create', 'UA-142576921-1', 'auto');
   ga('set', 'anonymizeIp', false)
   ga('send', 'pageview');
-
+  function hobloc(event) {
+    ga('send', 'event', {
+      eventCategory: 'Outbound Link',
+      eventAction: 'click',
+      eventLabel: event.target.href,
+      transport: 'beacon'
+    });
+  }
 </script>
 </head>
 <body>

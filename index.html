@@ -6,12 +6,9 @@
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 ga('create', 'UA-142576921-Y', 'auto');
-if (window.performance) {
-  var timeSincePageLoad = Math.round(performance.now());
-  ga('send', 'timing', 'JS Dependencies', 'load', timeSincePageLoad);
-} else {
-  ga('send', 'pageview');
-}
+var timeSincePageLoad = Math.round(performance.now());
+ga('send', 'timing', 'JS Dependencies', 'load', timeSincePageLoad);
+ga('send', 'pageview');
 function hobloc(event) {
   ga('send', 'event', {
     eventCategory: 'Outbound Link',

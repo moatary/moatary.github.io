@@ -109,7 +109,8 @@ class arg:
     pass
 
 
-class tuner():
+class tuner(): 
+### class for automatically check all new parameter settings and finding teh best tunign parameter in all their interactions
     def __init__(self,*tunes):
         names=[]
         self.args=loadargs()
@@ -347,6 +348,7 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq = 20):
 
 
 def adjust_learning_rate(optimizer, lr, epoch):
+    ### Adjusting rate of learning for avoiding premature convergence
     lr = lr * 0.92**(epoch // 10)
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     # if epoch == 30 or epoch == 33 or epoch == 36: ##todo: not verified by best acc
@@ -363,6 +365,7 @@ def adjust_learning_rate(optimizer, lr, epoch):
 
 
 class AverageMeter(object):
+    # keeping track of average
     """Computes and stores the average and current value"""
     def __init__(self):
         self.reset()
@@ -380,6 +383,7 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 def accuracy(output, target, topk=(1,)): ##(TODO):not debugged
+    # computing classification accuracy
     """Computes the precision@k for the specified values of k"""
     maxk = max(topk)
     batch_size = target.size(0)
@@ -400,6 +404,7 @@ def accuracy(output, target, topk=(1,)): ##(TODO):not debugged
 
 
 def validate(val_loader, model, criterion, saveDir='/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/', print_freq=20):
+    # validating accuracy
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
@@ -464,216 +469,5 @@ def associateId2DifferentNames(listofimages):
 
 
 
-def main5_getLabelsFromColors():
-    from kario_proc3 import ImageManuallyEditted, getManualTrainLabelsInfo
-    from needy_funcs import comparetunes
-    import pickle
-    import os
-    import numpy as np
-    import shutil
-    #1) get all data from saved main4_DebugDataCleaner1
-    with open('/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/pickle1_resultofdatacleaning.pkl', 'rb') as fff:
-        pickledata  = pickle.load(fff)
-    #2) import colors-labels right data
-    datasrc='/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/1stcorrectionphase_path2correctocrs/'
-    def getColorIndsLblsVecs(datasrc):
-        ColorLbls=np.asarray([int(itm.split(' ')[0].split('_')[-1]) for itm in os.listdir(datasrc) if itm.split('.')[-1]=='png'])
-        ColorInds=np.asarray([int(itm.split(' ')[1].split('_')[-1]) for itm in os.listdir(datasrc) if itm.split('.')[-1]=='png'])
-        ColorVecs=np.asarray([[int(itm.split('_')[-1].split('.')[0]),int(itm.split('_')[-1].split('.')[1]),int(itm.split('_')[-1].split('.')[2])] for itm in os.listdir(datasrc) if itm.split('.')[-1] == 'png'])
-        ck = [len(itm) != 3 for itm in ColorVecs]
-        ColorVecs = ColorVecs[np.where(np.asarray(ck) == False)[0].tolist()]
-        ColorVecs = np.asarray(ColorVecs.tolist())
-        #4) get labels from colors:
-        current_existing_labels=np.sort(np.unique(ColorLbls))
-        current_existing_colors=np.concatenate([np.reshape(np.mean(ColorVecs[np.where(ColorLbls==lbl)[0].tolist()],0),[1,3]) for lbl in current_existing_labels],axis=0)
-        return ColorLbls,ColorInds,ColorVecs,current_existing_labels,current_existing_colors
-    # # get current color info:
-    # ColorLbls, ColorInds, ColorVecs, current_existing_labels, current_existing_colors = getColorIndsLblsVecs(datasrc)
-    # #5)change label x to 24:
-    # ColorLbls1, ColorInds1, ColorVecs1, current_existing_labels1, current_existing_colors1 = getColorIndsLblsVecs(datasrc+'label_x')
-    # ColorLbls1[ColorLbls1==22]=24
-    # current_existing_labels1[current_existing_labels1==22]=24
-    # ColorLbls, ColorInds, ColorVecs, current_existing_labels, current_existing_colors = np.append(ColorLbls,ColorLbls1), np.append(ColorInds,ColorInds1), np.append(ColorVecs,ColorVecs1), np.append(current_existing_labels,current_existing_labels1), np.concatenate([current_existing_colors,current_existing_colors1],0),
-    # ##(TODO): REVISED LABEL OF INDS HAS TO BE SAVED AND REPLACED WITH CURRENT PICKLE-BACKUP
-    # # ANd the resulted color-label-map :
-    # current_existing_colors=np.asmatrix(current_existing_colors)/np.transpose([np.sum(current_existing_colors**2,1)**0.5],[1,0])
-    #
-    #
-    # # Load all data needed to label to find label using the created color-label-map:
-    # WrongLbls, WrongInds,WrongVecs ,tmp1 ,tmp1  = getColorIndsLblsVecs(datasrc+'wronglabels_mustgetright')
-    # getColorIndx=lambda color:  current_existing_labels[ np.argmax(    current_existing_colors*(np.asarray(color).astype(np.float64).reshape([-1,1]))    ) ]
-    # RightLbls= [getColorIndx(itm) for itm in WrongVecs ]
-    # # now, save new names to recheck:
-    # where2save=datasrc + 'wronglabels_mustberight/'
-    # try:
-    #     os.mkdir(where2save)
-    # except:
-    #     pass
-    # for i in range(len(WrongInds)):
-    #     srcfile= datasrc + 'wronglabels_mustgetright/' + 'label_%02i number_%02i color_%03i.%03i.%03i.png' % (WrongLbls[i], WrongInds[i], WrongVecs[i][0], WrongVecs[i][1],WrongVecs[i][2])
-    #     dstfile= where2save + 'label_%02i number_%02i color_%03i.%03i.%03i.png' % (RightLbls[i], WrongInds[i], WrongVecs[i][0], WrongVecs[i][1],WrongVecs[i][2])
-    #     shutil.copyfile(srcfile,dstfile)
-    #     os.chmod(dstfile,0o666 )
-    ## get color-label map from list of corrected images (last time done)
-    rightlabelspath='/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/truelabelswithout5,15,16/'
-    ColorLbls, ColorInds, ColorVecs, current_existing_labels, current_existing_colors = getColorIndsLblsVecs(rightlabelspath)
-    # look for labels 5,15,16:
-    colorlabelmap_txt='/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/colorlabelmap.txt'
-    # # update indice-labels in pickle,trainfolder    ///  update color-label-map and save as pickle
-    # truelabelswithout5_15_16='/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/truelabelswithout5,15,16/'
-    # ColorLbls, ColorInds, ColorVecs, current_existing_labels, current_existing_colors = getColorIndsLblsVecs(truelabelswithout5_15_16)
-    # with open(colorlabelmap_txt,'wb') as fil:
-    #     pickle.dump([current_existing_labels, current_existing_colors],fil)
-    # ## load indice-labels-map from file:
-    with open(colorlabelmap_txt,'rb') as fil:
-        current_existing_labels, current_existing_colors=pickle.load(fil)
-    # current_existing_colors=np.asmatrix(current_existing_colors/np.transpose([(np.sum(current_existing_colors**2,1))**0.5],[1,0]))
-    # map for dataset of mixed right wrong labels
-    WrongLbls, WrongInds,WrongVecs, tmp1, tmp1  = getColorIndsLblsVecs(datasrc)
-    # getColorIndx=lambda color:  current_existing_labels[ np.argmax(    current_existing_colors*(np.asarray(color).astype(np.float64).reshape([-1,1]))    ) ]
-    getColorIndx=lambda color:  current_existing_labels[ np.argmax(    current_existing_colors*(np.asarray(color).astype(np.float64).reshape([-1,1]))    ) ]
-    getcolormult=lambda color:   np.max(    current_existing_colors*(np.asarray(color).astype(np.float64).reshape([-1,1]))    )
-    def getColorIndx(color):
-        thresh2reject= 0.3
-        color1=color/(np.sum(color**2))**0.5
-    RightLbls= [getColorIndx(itm) for itm in WrongVecs ]
-    RightMult= [getcolormult(itm/(np.sum(itm**2))**0.5) for itm in WrongVecs ]
-    # save them to wronglabels_mustberight:
-    where2save=datasrc+'wronglabels_mustberight/'
-    try:
-        os.mkdir(where2save)
-    except:
-        pass
-    for i in range(len(WrongInds)):
-        srcfile= datasrc +  'label_%02i number_%02i color_%03i.%03i.%03i.png' % (WrongLbls[i], WrongInds[i], WrongVecs[i][0], WrongVecs[i][1],WrongVecs[i][2])
-        dstfile= where2save + 'label_%02i number_%02i color_%03i.%03i.%03i.png' % (RightLbls[i], WrongInds[i], WrongVecs[i][0], WrongVecs[i][1],WrongVecs[i][2])
-        shutil.copyfile(srcfile,dstfile)
-        os.chmod(dstfile,0o666 )
-    ids=[9914,10198,79,9646,10979,7661,5730,10238,8119,10508,8465,1034,1837,10060,8195,160,6890,6724,3640,2143,2565,794,1986,71,1364,11057,3361,4327]
-    def showsomeimages(ids):
-        pat='/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/1stcorrectionphase_path2correctocrs/wronglabels_mustberight/'
-        imgs=os.listdir(pat)
-        inds=[int(itm.split(' ')[1].split('_')[1]) for itm in imgs if itm.split('.')[-1]=='png']
-        ims=[]
-        for eachid in ids:
-            w=inds.index(eachid)
-            ims.append(sk.io.imread(pat+imgs[w]))
-        show(*ims,labels=ids)
-    ## indices with totally right labels except 5,15,16:
-    ColorLbls, ColorInds, tmp0, tmp1, tmp2 = getColorIndsLblsVecs(where2save)
-    ColorLbls, ColorInds =ColorLbls.tolist(), ColorInds.tolist()
-    path2folders=where2save+'mustgetright/'
-    dirs=os.listdir(path2folders)
-    #froms=[int(itm.split(' ')[0]) for itm in dirs]
-    tos=  [int(itm.split(' ')[1]) for itm in dirs]
-    for fldnum in range(len(dirs)):
-        tmp3, ColorInds1, tmp0, tmp1, tmp2 = getColorIndsLblsVecs(path2folders+dirs[fldnum])
-        ColorLbls1= [tos[fldnum]]*len(ColorInds1)
-        ColorInds.append(ColorInds1)
-        ColorLbls.append(ColorLbls1)
-    # save the indx-labels by pickle:
-    with open(datasrc+'indxlabelsWO5,15,16.pkl','wb') as ffff:
-        pickle.dump([ColorInds,ColorLbls],ffff)
-    TrainVecColors=np.asarray(TrainVecs)
-    #setdiff=lambda inn,out: [x for x in inn if x not in out]
-    #unexistedLbls=np.asarray(setdiff(np.asarray(list(range(1,23))),current_existing_labels)) # 1 2 3 4 5 8 15 16,[163,80,244]
-    #unexistedColors=np.asarray([[190,141,141], [117,180,117] , [138,138,188], [192,144,192], [194,194,194] , [235,185,185], [162,244,78]])
-    current_existing_labels=np.append(current_existing_labels,unexistedLbls)
-    current_existing_colors=np.append(current_existing_colors,unexistedColors.astype(np.float64),0)
-    current_existing_colors=np.asarray(current_existing_colors)/(np.sqrt(np.asarray(np.repeat(np.sum(np.asarray(current_existing_colors)**2,1).reshape([1,-1]) ,  current_existing_colors.shape[1],0  )))).T
-    current_existing_colors=np.asmatrix(current_existing_colors )
-    ## NOW, extract each labels using nearest neighbor of colors
-    TrainLbls = [getColorIndx(itm) for itm in TrainVecs]
-
-def main6_findChromosomePanj():  # MAKING PICKLES AND TRAINLABEL DATA (BUT DIRTY AND MUST BE PRUNED)
-    from kario_proc3 import ImageManuallyEditted, getManualTrainLabelsInfo
-    from needy_funcs import comparetunes
-    import pickle
-    import numpy as np
-    import os
-    import shutil
-    import skimage as sk
-    from segment_pref1 import findchromosome5boundary
-    #1) loading images with indices
-    with open('/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/pickle1_resultofdatacleaning.pkl', 'rb') as fff:
-        preproc_indices, preproc_dataindices, preproc_chromeindices, preproc_subjectid, preproc_labels, preproc_colors, preproc_scores, preproc_images, preproc_innerboundarys3pcs, preproc_innerboundarys3pc_lastend  = pickle.load(fff)
-
-    #2) loading list of images those indices belong to
-    path2pickle_listofdataimage='/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/pickle_listofdataimage.pkl'
-    with open(path2pickle_listofdataimage, 'rb') as file:
-        listofimages, id4eachimage= pickle.load(file)
-    verified_dataindices=np.unique(preproc_dataindices)
-    path2data = '/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/datacleaning/'
-    path2pickle, path2picklebackup = '/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/pickle1_resultofdatacleaning_chromosome5.pkl', '/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/picklebackup1_resultofdatacleaning_chromosome5.pkl'
-    path2correctocrs_1stcorrectionphase = '/home/m2/Desktop/jahad_l/Karyotype_97/_converteed2tif/part4coding/1stcorrectionphase_path2correctocrs_chromosome5/'
-    if not os.path.isdir(path2correctocrs_1stcorrectionphase):
-        os.mkdir(path2correctocrs_1stcorrectionphase)
-    id4eachimage=[preproc_subjectid[itm] for itm in verified_dataindices]
-    listofimages=[listofimages[itm] for itm in verified_dataindices]
-    all_res = []
-    wrongocrs = []
-    currentindex, preproc_dataindices, preproc_chromeindices = - 1, [], []
-    preproc_indices, preproc_subjectid, preproc_labels, preproc_scores, preproc_colors, preproc_images, preproc_innerboundarys3pcs,preproc_innerboundarys3pc_lastend = [], [], [], [], [], [], [],[]
-    for i in range(len(listofimages)):  # ,image_name in enumerate():49 * 20 + 1,
-        image_name = listofimages[i]
-        # if i!=4:
-        #     continue
-        default_image = sk.io.imread(image_name)
-        res = findchromosome5boundary(default_image, plott=False)
-        tmp, chromes_scores, chromes_reginds, chromes_innerboundarys3pc_lastend, chromes_innerboundarys3pcs, chromes_imgs, chromes_bbox, chromes_masks, chromes_outerboundarys, chromes_recognizedlabels, chromes_markedimgs, chromes_colors = res
-        all_res.append(res)
-        # save images to manually find wrong labels:
-        for inum, lbl in enumerate(chromes_recognizedlabels):
-            currentindex += 1
-            preproc_dataindices.append(verified_dataindices[i])
-            preproc_subjectid.append(id4eachimage[i])
-            preproc_labels.append(chromes_recognizedlabels[inum])
-            preproc_colors.append(chromes_colors[inum])
-            preproc_scores.append(chromes_scores[inum])
-            preproc_images.append(chromes_imgs[inum].tolist())
-            preproc_innerboundarys3pcs.append(chromes_innerboundarys3pcs[inum])
-            preproc_innerboundarys3pc_lastend.append(chromes_innerboundarys3pc_lastend[inum])
-            path2sav = path2correctocrs_1stcorrectionphase + 'label_%02i number_%02i color_%03i.%03i.%03i.png' % (
-            chromes_recognizedlabels[inum], currentindex, chromes_colors[inum][0], chromes_colors[inum][1],
-            chromes_colors[inum][2])
-            scipy.misc.imsave(path2sav, chromes_markedimgs[inum])
-        if i % 20 == 0:
-            print('checkpoint%00i' % (i // 20))
-            try:
-                shutil.copyfile(path2pickle, path2picklebackup)
-            except:
-                pass
-            with open(path2pickle, "wb") as picklefile:
-                pickledata = [preproc_indices, preproc_dataindices, preproc_chromeindices, preproc_subjectid, preproc_labels, preproc_colors, preproc_scores, preproc_images, preproc_innerboundarys3pcs,preproc_innerboundarys3pc_lastend]
-                pickle.dump(pickledata, picklefile)
-    with open(path2pickle, "wb") as picklefile:
-        pickledata = [preproc_indices, preproc_dataindices, preproc_chromeindices, preproc_subjectid, preproc_labels, preproc_colors, preproc_scores, preproc_images, preproc_innerboundarys3pcs,preproc_innerboundarys3pc_lastend]
-        pickle.dump(pickledata, picklefile)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == '__main__':
-    tunes = {'nkernels': ['19','15','12','8','4'], 'nclassif': ['18', '14', '10', '7','4']}  ##new
-    tunerobj = tuner(tunes)
-    #
-    main3(1, {'nkernels': 15, 'nclassif': 18})
-    for ii, tuningparams in enumerate(tunerobj):
-        if ii==1:
-            continue
-        main(ii, tuningparams)

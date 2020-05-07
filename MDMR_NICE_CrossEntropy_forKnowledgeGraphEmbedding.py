@@ -29,7 +29,7 @@ class model_a (t.nn.Module): #@# model with neural net+nolearnable embeddings+ h
 
 
 
-class model_b (t.nn.Module): #@# model with learnable embedding +clusterbasedParamterershift+ bilinear trans
+class model_b (t.nn.Module): #@# model with learnable embedding +clusterbasedParamterershift+ bilinear transE
     def __init__(self, args):
         super(model_b,self).__init__()
         """
@@ -122,6 +122,7 @@ class model_b (t.nn.Module): #@# model with learnable embedding +clusterbasedPar
 
 
     def fromnumpy(self,dat):
+    # Convert from numpy vector to tensor
         import torch as t
         if self.cudaenabled==True:
             return t.from_numpy(dat).cuda()
@@ -130,6 +131,7 @@ class model_b (t.nn.Module): #@# model with learnable embedding +clusterbasedPar
 
 
     def tnnparameter(self,tens):
+    # make variables gradiant-supportive and keep track of it
         import torch as t
         if self.cudaenabled==True:
             return t.nn.Parameter(tens.cuda())
@@ -137,11 +139,13 @@ class model_b (t.nn.Module): #@# model with learnable embedding +clusterbasedPar
             return t.nn.Parameter(tens)
 
     def tensors2cuda(self):
+    # send tensors to GPU memory
         for itm in self.__dict__.keys():
             if type(self.__dict__[itm]) is t.Tensor:
                 self.__dict__[itm]= self.__dict__[itm].cuda()
 
     def setmode(self,mode='train'):
+    # In test mode, there is no backwarding process
         if mode=='train' or mode=='training':
             self.mode='train'
         elif mode=='test' or mode=='testing' or mode=='valid' or mode=='validation':
@@ -149,6 +153,7 @@ class model_b (t.nn.Module): #@# model with learnable embedding +clusterbasedPar
 
 
     def forward(self,input_headRelIds):
+    # model pipeline design
         from scipy import sparse
         # Only one instance (here 1x2 [relid,entid]) gets passed to the fun
         # input_headEntIds is a tensor of batch of selected head and its relation id
